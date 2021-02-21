@@ -1,0 +1,7 @@
+# everything
+*
+
+# allow
+!.git*
+!echomatch.py
+!main.py
