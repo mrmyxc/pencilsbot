@@ -77,12 +77,16 @@ async def add(ctx, *args):
 async def remove(ctx, *args):
     print(args)
     print(" ".join(args))
-    m = await remove_match(" ".join(args))
+    m = remove_match(" ".join(args))
     if ( m != None):
         ping = get_ping()
         ms = m.get_match_string()
         await get_ch().send(f"{ping}\nRemoved\n> {ms}")
+        print("unpin message")
         await m.messageid.unpin()
+        if m.timer != None:
+            print("cancel timer")
+            m.timer.cancel()
     
 @bot.command(name="show", help="show all matches")
 async def show(ctx, *args):
@@ -132,7 +136,7 @@ def show_matches():
     for m in matches:
         print( m.get_match_string() )
 
-async def remove_match(args):
+def remove_match(args):
     found = 0
     print("remove match")
     print(args)
@@ -147,11 +151,6 @@ async def remove_match(args):
             found = 1
             print("found match to remove")
             matches[m].fire = False
-            if matches[m].timer != None:
-                print("cancel timer")
-                matches[m].timer.cancel()
-            print("unpin message")
-            await matches[m].messageid.unpin()
 
     if found != 0:
         the_match = matches[the_match_id]
