@@ -5,6 +5,6 @@
 !.git*
 !echomatch.py
 !main.py
-!Procfile.py
+!Procfile
 !requirements.txt
 !runtime.txt
