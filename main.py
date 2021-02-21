@@ -99,6 +99,7 @@ async def myc(echomatch):
         print("not firing callback - match was removed")
         return
 
+    remove_match("{}".format(echomatch.id))
     print("time to start match")
     ping = get_ping()
     ms = echomatch.get_match_string()
@@ -155,6 +156,9 @@ async def remove_match(args):
     if found != 0:
         the_match = matches[the_match_id]
         del matches[the_match_id]
+
+    ms = the_match.get_match_string()
+    print(f"Removed a Match\n> {ms}")
 
     return the_match
 
