@@ -1,2 +1,2 @@
 discord.py
-maya.py
+maya
