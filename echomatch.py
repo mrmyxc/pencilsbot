@@ -56,12 +56,11 @@ class EchoMatch:
         difference = (self.match_time - now).total_seconds() 
         print( f"Difference for {self} : {difference}" )
 
-        if (difference < 0) or (difference > 0 and difference < 4) :
+        if difference > 0 :
             print("calling callback")
             # await this in a loop or something
             self.on_match_end(self)
             return True
-
 
         return False
 
