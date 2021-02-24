@@ -98,6 +98,7 @@ class EchoMatch:
     def cancel(self):
         print("set fire to false")
         self.fire = False
+        self.timer.cancel()
 
     def is_cancelled(self):
         print("check if cancelled")
