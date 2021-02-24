@@ -104,8 +104,12 @@ async def mycc(echomatch):
     message = await get_ch().fetch_message(echomatch.messageid)
     await message.unpin()
 
-    print("in mycc")
-    if echomatch.fire != True:
+    print("in mycc - save fire before removing and changing to false")
+    fire = echomatch.fire
+    
+    remove_match("{}".format(echomatch.id))
+
+    if fire != True:
         print("not firing callback - match was removed")
         return
 
@@ -117,7 +121,6 @@ async def mycc(echomatch):
 
 
 def myc(echomatch):
-    m = remove_match("{}".format(echomatch.id))
     asyncio.run_coroutine_threadsafe(mycc(m), the_loop)
 
 def get_match_details( s ):
