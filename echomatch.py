@@ -15,6 +15,7 @@ class EchoMatch:
         self.timer = self.create_timer()
         self.id = 0
         self.messageid = 0
+        self.fire = True
 
         if "match_id" in details.groupdict():
             print("match id is given in saved file")
@@ -31,7 +32,6 @@ class EchoMatch:
                 
         print("The ID is " + str(self.id) )
         self.show_match_time()
-        self.fire = True
         print("created match")
 
     @property
