@@ -2,7 +2,8 @@ import discord
 import os
 import re
 from discord import client
-import threading
+import asyncio
+from discord.channel import TextChannel
 
 from discord.ext import commands
 from discord.flags import SystemChannelFlags
@@ -17,8 +18,8 @@ bot = commands.Bot(command_prefix='!pencils ')
 the_loop = bot.loop
 
 main_channel = 0
-# main_channel_name = "jhh"
-main_channel_name = "coral-reef"
+main_channel_name = "jhh"
+# main_channel_name = "coral-reef"
 main_channel_id = 0
 
 channels = {}
@@ -26,8 +27,8 @@ channels = {}
 matches = {}
 
 def get_ping():
-    ping = "<@&786615126853812225>"
-    # ping = "ABC"
+    # ping = "<@&786615126853812225>"
+    ping = "ABC"
     return ping
 
 def get_ch():
@@ -46,6 +47,7 @@ def get_ch():
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
+    get_saved_matches()
     
 
 # @bot.event
@@ -69,9 +71,10 @@ async def add(ctx, *args):
     m = add_match(" ".join(args))
     ping = get_ping()
     ms = m.get_match_string()
-    msgid = await get_ch().send(f"{ping}\n```{ms}```")
-    m.messageid = msgid
-    await msgid.pin()
+    msg = await get_ch().send(f"{ping}\n```{ms}```")
+    m.messageid = msg.id
+    await msg.pin()
+    save_matches()
 
 @bot.command(name="remove", help="Remove a match")
 async def remove(ctx, *args):
@@ -82,11 +85,10 @@ async def remove(ctx, *args):
         ping = get_ping()
         ms = m.get_match_string()
         await get_ch().send(f"{ping}\nRemoved\n> {ms}")
+        m.cancel()
         print("unpin message")
-        await m.messageid.unpin()
-        if m.timer != None:
-            print("cancel timer")
-            m.timer.cancel()
+        message = await TextChannel.fetch_message(m.messageid)
+        await message.unpin()
     
 @bot.command(name="show", help="show all matches")
 async def show(ctx, *args):
@@ -98,18 +100,28 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send('Some error...')
 
-async def myc(echomatch):
+async def mycc(echomatch):
+    print("in mycc")
+    print("unpin message")
+    # TODO: get message
+    message = await TextChannel.fetch_message(echomatch.messageid)
+    await message.unpin()
+
+    print("in mycc")
     if echomatch.fire != True:
         print("not firing callback - match was removed")
         return
 
-    remove_match("{}".format(echomatch.id))
+    print("in mycc")
     print("time to start match")
     ping = get_ping()
     ms = echomatch.get_match_string()
     await get_ch().send(f"{ping} Next Match \n```{ms}```")
-    print("unpin message")
-    await echomatch.messageid.unpin()
+
+
+def myc(echomatch):
+    m = remove_match("{}".format(echomatch.id))
+    asyncio.run_coroutine_threadsafe(mycc(m), the_loop)
 
 def get_match_details( s ):
     match_string = r"(?P<match_opponent>.+),(?P<match_date>.+)[,\s](?P<match_time>.+)"
@@ -127,7 +139,6 @@ def add_match(args):
         print("making match")
         m = echomatch.EchoMatch(details, myc, the_loop)
         print("made match")
-        # add message ref to pin and unpin
         matches[str(m.id)] = m
         return m
 
@@ -140,25 +151,61 @@ def remove_match(args):
     found = 0
     print("remove match")
     print(args)
-    print("Matches ---")
     print(matches)
-    print("--- Matches")
     the_match_id = re.search(r"(\d+)?", args).group()
     the_match = None
+    # remove other matches that arent supposed to be there
+    remove_ids = []
     for m in matches:
         print( "Match: " + str(m))
-        if str(m) == str(the_match_id):
+        if matches[m].is_cancelled() or str(m) == str(the_match_id):
             found = 1
             print("found match to remove")
-            matches[m].fire = False
+            matches[m].cancel()
+            remove_ids.append(m)
 
     if found != 0:
         the_match = matches[the_match_id]
-        del matches[the_match_id]
+        for x in remove_ids:
+            del matches[x]
 
-    ms = the_match.get_match_string()
-    print(f"Removed a Match\n> {ms}")
+        ms = the_match.get_match_string()
+        print(f"Removed a Match\n> {ms}")
+    else:
+        print("could not find match")
+    
+    save_matches()
 
     return the_match
+
+def get_saved_matches():
+    saved_match_string = r"\[(?P<match_id>\d+)\][,\s]+\[(?P<msg_id>\d+)\][,\s]+(?P<match_opponent>.+),(?P<match_date>.+)[,\s]+(?P<match_time>.+)"
+    pa = re.compile(saved_match_string, re.IGNORECASE)
+    try:
+        file = open("matches.echo", "r")
+        print("Checking all saved matches")
+        for line in file.readlines():
+            print(line.strip())
+            matched_string_obj = pa.match(line.strip())
+            if matched_string_obj != None:
+                print("creating match from save file")
+                x = echomatch.EchoMatch(matched_string_obj, myc, the_loop)
+                matches[str(x.id)] = x
+    except:
+        print("failed to open file. may not exist")
+        file = open("matches.echo", "w")
+        
+    file.close()
+
+def save_matches():
+    file = open("matches.echo", "w")
+    match_lines = []
+    for match in matches:
+        match_lines.append( matches[match].get_match_conf() )
+        match_lines.append( "\n" )
+    
+    file.writelines(match_lines)
+    file.close()
+
 
 bot.run(TOKEN)
