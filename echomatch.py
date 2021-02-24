@@ -75,7 +75,7 @@ class EchoMatch:
         drift = timedelta()
         time_period = timedelta(seconds=n)
         while 1:
-            if stop_periodic == True:
+            if (stop_periodic == True) or (self.fire == False):
                 return
             time.sleep(n-drift.microseconds/1000000.0)
             current_time = datetime.now()
@@ -98,7 +98,6 @@ class EchoMatch:
     def cancel(self):
         print("set fire to false")
         self.fire = False
-        self.timer.join()
 
     def is_cancelled(self):
         print("check if cancelled")
