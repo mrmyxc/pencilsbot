@@ -3,8 +3,6 @@ import os
 import re
 from discord import client
 import asyncio
-from discord.channel import TextChannel
-
 from discord.ext import commands
 from discord.flags import SystemChannelFlags
 from dotenv import load_dotenv
@@ -87,7 +85,7 @@ async def remove(ctx, *args):
         await get_ch().send(f"{ping}\nRemoved\n> {ms}")
         m.cancel()
         print("unpin message")
-        message = await TextChannel.fetch_message(m.messageid)
+        message = await get_ch().fetch_message(m.messageid)
         await message.unpin()
     
 @bot.command(name="show", help="show all matches")
@@ -103,8 +101,7 @@ async def on_command_error(ctx, error):
 async def mycc(echomatch):
     print("in mycc")
     print("unpin message")
-    # TODO: get message
-    message = await TextChannel.fetch_message(echomatch.messageid)
+    message = await get_ch().fetch_message(echomatch.messageid)
     await message.unpin()
 
     print("in mycc")
