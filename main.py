@@ -121,7 +121,7 @@ async def mycc(echomatch):
 
 
 def myc(echomatch):
-    asyncio.run_coroutine_threadsafe(mycc(m), the_loop)
+    asyncio.run_coroutine_threadsafe(mycc(echomatch), the_loop)
 
 def get_match_details( s ):
     match_string = r"(?P<match_opponent>.+),(?P<match_date>.+)[,\s](?P<match_time>.+)"
