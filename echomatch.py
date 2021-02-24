@@ -43,9 +43,10 @@ class EchoMatch:
         self._global_id = val
 
     def create_timer(self):
+        MINUTES = 45
         now = maya.now().datetime()
         difference = (self.match_time - now).total_seconds() 
-        difference = difference - (45 * 60)
+        difference = difference - (MINUTES * 60)
         self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(3, self.check_time_expired, self))
         self.timer.start()
         print("created timer")
@@ -56,7 +57,8 @@ class EchoMatch:
         difference = (self.match_time - now).total_seconds() 
         print( f"Difference for {self} : {difference}" )
 
-        if difference > 0 :
+        # is in the past
+        if difference < 0:
             print("calling callback")
             # await this in a loop or something
             self.on_match_end(self)
