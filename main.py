@@ -26,7 +26,7 @@ dbcursor.execute("SELECT version();")
 record = dbcursor.fetchone()
 print("connected to - ", record, "\n")
 
-bot = commands.Bot(command_prefix='!pencils ')
+bot = commands.Bot(command_prefix='!p ')
 the_loop = bot.loop
 
 main_channel = 0
@@ -39,8 +39,8 @@ channels = {}
 matches = {}
 
 def get_ping():
-    # ping = "<@&786615126853812225>"
-    ping = "ABC"
+    ping = "<@&786615126853812225>"
+    # ping = "ABC"
     return ping
 
 def get_ch():
