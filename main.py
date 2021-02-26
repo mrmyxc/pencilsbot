@@ -30,8 +30,8 @@ bot = commands.Bot(command_prefix='!pencils ')
 the_loop = bot.loop
 
 main_channel = 0
-main_channel_name = "jhh"
-# main_channel_name = "coral-reef"
+# main_channel_name = "jhh"
+main_channel_name = "coral-reef"
 main_channel_id = 0
 
 channels = {}
