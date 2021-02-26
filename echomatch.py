@@ -48,7 +48,7 @@ class EchoMatch:
         now = maya.now().datetime()
         difference = (self.match_time - now).total_seconds() 
         difference = difference - (MINUTES * 60)
-        self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(5, self.check_time_expired, self))
+        self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(30, self.check_time_expired, self))
         self.timer.start()
         print("created timer")
     
