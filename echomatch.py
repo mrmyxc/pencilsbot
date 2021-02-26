@@ -16,6 +16,7 @@ class EchoMatch:
         self.id = 0
         self.messageid = 0
         self.fire = True
+        self.stop = False
 
         if "match_id" in details.groupdict():
             print("match id is given in saved file")
@@ -47,20 +48,23 @@ class EchoMatch:
         now = maya.now().datetime()
         difference = (self.match_time - now).total_seconds() 
         difference = difference - (MINUTES * 60)
-        self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(3, self.check_time_expired, self))
+        self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(5, self.check_time_expired, self))
         self.timer.start()
         print("created timer")
     
     def check_time_expired(self):
         now = maya.now().datetime()
-        difference = -1
-        difference = (self.match_time - now).total_seconds() 
-        print( f"Difference for {self} : {difference}" )
+        MINUTES = 35
+        actual_difference = (self.match_time - now).total_seconds()
+        ping_time_difference = actual_difference - (MINUTES * 60)
+        # check if actual difference is in the future
+        print( f"Pinging for  {self} in : {ping_time_difference} seconds" )
 
-        # is in the past
-        if difference < 0:
+        # ping immediately if time is in the past
+        if (ping_time_difference < 0):
             print("calling callback")
-            # await this in a loop or something
+            # give discord time to finish actions before calling callback
+            time.sleep(5)
             self.on_match_end(self)
             return True
 
@@ -75,7 +79,7 @@ class EchoMatch:
         drift = timedelta()
         time_period = timedelta(seconds=n)
         while 1:
-            if (stop_periodic == True) or (self.fire == False):
+            if (self.stop == True) or (stop_periodic == True) or (self.fire == False):
                 return
             time.sleep(n-drift.microseconds/1000000.0)
             current_time = datetime.now()
@@ -101,8 +105,12 @@ class EchoMatch:
 
     def is_cancelled(self):
         print("check if cancelled")
-        self.fire = False
         print(f"{not self.fire}")
+        return not self.fire
+    
+    def stop(self):
+        print("stopping thread")
+        self.stop = True
 
 
 

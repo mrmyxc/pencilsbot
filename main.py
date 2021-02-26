@@ -1,16 +1,30 @@
 import discord
+import psycopg2
 import os
 import re
 from discord import client
 import asyncio
 from discord.ext import commands
-from discord.flags import SystemChannelFlags
 from dotenv import load_dotenv
+import signal
+import sys
 
 import echomatch
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
+DATABASE_URL = os.getenv("DATABASE_URL")
+db_file = "db"
+
+dbconnection = psycopg2.connect(DATABASE_URL, sslmode='require')
+dbcursor = dbconnection.cursor()
+print(dbconnection.get_dsn_parameters(), "\n")
+
+# Executing a SQL query
+dbcursor.execute("SELECT version();")
+
+record = dbcursor.fetchone()
+print("connected to - ", record, "\n")
 
 bot = commands.Bot(command_prefix='!pencils ')
 the_loop = bot.loop
@@ -119,7 +133,6 @@ async def mycc(echomatch):
     ms = echomatch.get_match_string()
     await get_ch().send(f"{ping} Next Match \n```{ms}```")
 
-
 def myc(echomatch):
     asyncio.run_coroutine_threadsafe(mycc(echomatch), the_loop)
 
@@ -178,7 +191,7 @@ def remove_match(args):
 
     return the_match
 
-def get_saved_matches():
+def file_get_saved_matches():
     saved_match_string = r"\[(?P<match_id>\d+)\][,\s]+\[(?P<msg_id>\d+)\][,\s]+(?P<match_opponent>.+),(?P<match_date>.+)[,\s]+(?P<match_time>.+)"
     pa = re.compile(saved_match_string, re.IGNORECASE)
     try:
@@ -197,7 +210,7 @@ def get_saved_matches():
         
     file.close()
 
-def save_matches():
+def file_save_matches():
     file = open("matches.echo", "w")
     match_lines = []
     for match in matches:
@@ -207,5 +220,93 @@ def save_matches():
     file.writelines(match_lines)
     file.close()
 
+def db_save_matches():
+    print("Saving all current matches into database")
+    dbinsert = "INSERT INTO echo_matches (id, details) "
+    dbalternative = " ON CONFLICT DO NOTHING;"
+
+    dbgetquery = "SELECT * FROM echo_matches;"
+    dbcursor.execute(dbgetquery)
+    records = dbcursor.fetchall()
+
+    # ids to skip
+    skips = []
+
+    # add if in dictionary but not in database
+    # remove if in database but not in dictionary
+    for record in records:
+        print("REC : ", record[0])
+        print(matches.keys())
+        if str(record[0]) not in matches.keys(): #id
+            dbdelete = f"DELETE FROM echo_matches WHERE id = {record[0]};"
+            print(dbdelete)
+            dbcursor.execute(dbdelete)
+        else:
+            skips.append(str(record[0]))
+    
+    print("SKIP : ", skips)
+
+    for echo_match_id in matches:
+        if echo_match_id not in skips:
+            print( echo_match_id, " not in skips")
+            amatch = matches[echo_match_id]
+            dbvalues = "VALUES({id}, '{details}')".format(id = amatch.id, details = amatch.get_match_conf())
+            print(dbinsert + dbvalues + dbalternative)
+            dbcursor.execute(dbinsert + dbvalues + dbalternative)
+
+    dbconnection.commit()
+    print(f"Number of records {dbcursor.rowcount}")
+
+def db_get_saved_matches():
+    saved_match_string = r"\[(?P<match_id>\d+)\][,\s]+\[(?P<msg_id>\d+)\][,\s]+(?P<match_opponent>.+),(?P<match_date>.+)[,\s]+(?P<match_time>.+)"
+    pa = re.compile(saved_match_string, re.IGNORECASE)
+    print("Checking all saved matches in database")
+    dbquery = "SELECT * FROM echo_matches"
+    dbcursor.execute(dbquery)
+    records = dbcursor.fetchall()
+    for record in records:
+        print(record)
+        matched_string_obj = pa.match(record[1])
+        if matched_string_obj != None:
+            print("creating match from save file")
+            x = echomatch.EchoMatch(matched_string_obj, myc, the_loop)
+            matches[str(x.id)] = x
+
+
+def save_matches():
+    if db_file == "file":
+        file_save_matches()
+    else:
+        db_save_matches()
+
+def get_saved_matches():
+    if db_file == "file":
+        file_get_saved_matches()
+    else:
+        db_get_saved_matches()
+
+
+def signal_handler(sig, frame):
+    try:
+        print('closing database')
+        dbcursor.close()
+        dbconnection.close()
+    except:
+        print("error closing database")
+
+    try:
+        print('stopping bot')
+        bot.close()
+    except:
+        print("error stopping bot")
+    
+    print("stop all match threads")
+    for echo_match_id in matches:
+        matches[echo_match_id].stop()
+
+    print('exiting')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 bot.run(TOKEN)
