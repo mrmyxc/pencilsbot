@@ -1,3 +1,4 @@
 discord.py
 maya
 python-dotenv
+psycopg2
