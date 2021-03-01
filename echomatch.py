@@ -11,7 +11,8 @@ class EchoMatch:
         self.opponent_name = details.group("match_opponent")
         self.raw_time = details.group("match_date") + " " + details.group("match_time")
         self.on_match_end = on_match_end
-        self.match_time = maya.parse(self.raw_time).datetime(to_timezone='Europe/London', naive=False)
+        self.match_time = self.parse_time()
+        self.absolute_time = self.match_time.strftime("%d/%m/%Y %H:%M")
         self.timer = self.create_timer()
         self.id = 0
         self.messageid = 0
@@ -97,7 +98,7 @@ class EchoMatch:
         return ("Match ID#{1} [{0}] - " + time_string).format(self.opponent_name, self.id)
 
     def get_match_conf(self):
-        return f"[{self.id}] [{self.messageid}] {self.opponent_name}, {self.raw_time}"
+        return f"[{self.id}] [{self.messageid}] {self.opponent_name}, {self.absolute_time}"
 
     def cancel(self):
         print("set fire to false")
@@ -112,5 +113,17 @@ class EchoMatch:
         print("stopping thread")
         self.stop = True
 
+    def parse_time(self):
+        match_time = maya.when("today").datetime
+        try:
+            match_time = maya.when(self.raw_time, prefer_dates_from="past").datetime(to_timezone='Europe/London', naive=False)
+        except ValueError:
+            print("failed to parse relative time. trying \"absolute\" time")
+            try:
+                match_time = maya.parse(self.raw_time, day_first=True).datetime(to_timezone='Europe/London', naive=False)
+            except ValueError:
+                print("not absolute time")
+        
+        return match_time
 
 
