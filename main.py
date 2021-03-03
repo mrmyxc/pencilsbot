@@ -30,8 +30,8 @@ bot = commands.Bot(command_prefix='!p ')
 the_loop = bot.loop
 
 main_channel = 0
-main_channel_name = "jhh"
-# main_channel_name = "coral-reef"
+# main_channel_name = "jhh"
+main_channel_name = "coral-reef"
 main_channel_id = 0
 
 channels = {}
@@ -74,7 +74,7 @@ async def add(ctx, *args):
     m = add_match(" ".join(args))
     ping = get_ping()
     ms = m.get_match_string()
-    msg = await get_ch().send(f"{ping}\n```{ms}```")
+    msg = await get_ch().send(f"```{ms}```")
     m.messageid = msg.id
     await msg.pin()
     save_matches()
@@ -87,7 +87,7 @@ async def remove(ctx, *args):
     if ( m != None):
         ping = get_ping()
         ms = m.get_match_string()
-        await get_ch().send(f"{ping}\nRemoved\n> {ms}")
+        await get_ch().send(f"Removed\n> {ms}")
         m.cancel()
         print("unpin message")
         message = await get_ch().fetch_message(m.messageid)
