@@ -116,7 +116,7 @@ class EchoMatch:
     def parse_time(self):
         match_time = maya.when("today").datetime
         try:
-            match_time = maya.when(self.raw_time, prefer_dates_from="past").datetime(to_timezone='Europe/London', naive=False)
+            match_time = maya.when(self.raw_time, prefer_dates_from="future").datetime(to_timezone='Europe/London', naive=False)
         except ValueError:
             print("failed to parse relative time. trying \"absolute\" time")
             try:

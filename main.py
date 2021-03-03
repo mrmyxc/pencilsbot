@@ -30,8 +30,8 @@ bot = commands.Bot(command_prefix='!p ')
 the_loop = bot.loop
 
 main_channel = 0
-# main_channel_name = "jhh"
-main_channel_name = "coral-reef"
+main_channel_name = "jhh"
+# main_channel_name = "coral-reef"
 main_channel_id = 0
 
 channels = {}
@@ -62,15 +62,6 @@ async def on_ready():
     get_saved_matches()
     
 
-# @bot.event
-# async def on_message(message):
-#     if (message.author == client.user):
-#         return
-#     m = message.content.lower() 
-
-#     if ( m.startswith("!pencils") ):
-#         commands.parse_cmd(message)
-    
 @bot.command(name="name")
 async def name(ctx, args):
     await ctx.send("```hello {}```".format(args))
