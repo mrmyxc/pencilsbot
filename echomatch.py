@@ -50,7 +50,7 @@ class EchoMatch:
         difference = (self.match_time - now).total_seconds() 
         difference = difference - (MINUTES * 60)
         self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(30, self.check_time_expired, self))
-        self.timer.start()
+        # self.timer.start()
         print("created timer")
     
     def check_time_expired(self):
@@ -116,11 +116,11 @@ class EchoMatch:
     def parse_time(self):
         match_time = maya.when("today").datetime
         try:
-            match_time = maya.when(self.raw_time, prefer_dates_from="future").datetime(to_timezone='Europe/London', naive=False)
+            match_time = maya.when(self.raw_time, prefer_dates_from="future").datetime(naive=False)
         except ValueError:
             print("failed to parse relative time. trying \"absolute\" time")
             try:
-                match_time = maya.parse(self.raw_time, day_first=True).datetime(to_timezone='Europe/London', naive=False)
+                match_time = maya.parse(self.raw_time, day_first=True).datetime(naive=False)
             except ValueError:
                 print("not absolute time")
         
