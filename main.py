@@ -30,15 +30,17 @@ bot = commands.Bot(command_prefix='!p ')
 the_loop = bot.loop
 
 main_channel = 0
-main_channel_name = "jhh"
-# main_channel_name = "coral-reef"
+# main_channel_name = "jhh"
+main_channel_name = "coral-reef"
 main_channel_id = 0
 
 channels = {}
 
 matches = {}
 
-def get_ping():
+def get_ping(test):
+    if test:
+        return "Not a Ping"
     ping = "<@&786615126853812225>"
     # ping = "ABC"
     return ping
@@ -72,7 +74,7 @@ async def add(ctx, *args):
     print(args)
     print(" ".join(args))
     m = add_match(" ".join(args))
-    ping = get_ping()
+    ping = get_ping("test" in args)
     ms = m.get_match_string()
     msg = await get_ch().send(f"```{ms}```")
     m.messageid = msg.id
@@ -85,7 +87,7 @@ async def remove(ctx, *args):
     print(" ".join(args))
     m = remove_match(" ".join(args))
     if ( m != None):
-        ping = get_ping()
+        ping = get_ping("test" in args)
         ms = m.get_match_string()
         await get_ch().send(f"Removed\n> {ms}")
         m.cancel()
