@@ -12,7 +12,7 @@ class EchoMatch:
         self.raw_time = details.group("match_date") + " " + details.group("match_time")
         self.on_match_end = on_match_end
         self.match_time = self.parse_time()
-        self.absolute_time = self.match_time.strftime("%d/%m/%Y %H:%M")
+        self.absolute_time = self.match_time.strftime("%d %B %Y %H:%M")
         self.timer = self.create_timer()
         self.id = 0
         self.messageid = 0
@@ -45,7 +45,7 @@ class EchoMatch:
         self._global_id = val
 
     def create_timer(self):
-        MINUTES = 45
+        MINUTES = 35
         now = maya.now().datetime()
         difference = (self.match_time - now).total_seconds() 
         difference = difference - (MINUTES * 60)
