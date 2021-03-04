@@ -50,8 +50,11 @@ class EchoMatch:
         difference = (self.match_time - now).total_seconds() 
         difference = difference - (MINUTES * 60)
         self.timer = threading.Thread(target=self.exec_every_n_seconds, args=(30, self.check_time_expired, self))
-        # self.timer.start()
-        print("created timer")
+        if difference < (2 * 60 * 60 * 24):
+            print("created timer")
+            self.timer.start()
+        else:
+            print(f"too far in future: {difference/(60*60)} hours" )
     
     def check_time_expired(self):
         now = maya.now().datetime()
